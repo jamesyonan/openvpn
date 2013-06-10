@@ -1054,13 +1054,7 @@ process_ip_header (struct context *c, unsigned int flags, struct buffer *buf)
        * The --passtos and --mssfix options require
        * us to examine the IPv4 header.
        */
-
-      if (flags & (PIP_MSSFIX
-#if PASSTOS_CAPABILITY
-	  | PIPV4_PASSTOS
-#endif
-	  | PIPV4_CLIENT_NAT
-	  ))
+      if (flags & PIP_OPT_MASK)
 	{
 	  struct buffer ipbuf = *buf;
 	  if (is_ipv4 (TUNNEL_TYPE (c->c1.tuntap), &ipbuf))

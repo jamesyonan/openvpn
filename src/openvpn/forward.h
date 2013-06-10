@@ -249,9 +249,11 @@ bool send_control_channel_string (struct context *c, const char *str, int msglev
 
 #define PIPV4_PASSTOS         (1<<0)
 #define PIP_MSSFIX            (1<<1)         /* v4 and v6 */
-#define PIPV4_OUTGOING        (1<<2)
 #define PIPV4_EXTRACT_DHCP_ROUTER (1<<3)
 #define PIPV4_CLIENT_NAT      (1<<4)
+#define PIP_OPT_MASK          0xFFFF         /* all possible options for */
+                                             /* process_ip_header() */
+#define PIPV4_OUTGOING        (1<<16)
 
 void process_ip_header (struct context *c, unsigned int flags, struct buffer *buf);
 
