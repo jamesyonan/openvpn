@@ -217,6 +217,8 @@ struct options
 
   struct remote_host_store *rh_store;
 
+  const char *remote_override;
+
   bool remote_random;
   const char *ipchange;
   const char *dev;
