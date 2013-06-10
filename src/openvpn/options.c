@@ -4494,6 +4494,11 @@ add_option (struct options *options,
 	goto err;
     }
 #endif
+  else if (streq (p[0], "remote-override") && p[1])
+    {
+      VERIFY_PERMISSION (OPT_P_GENERAL);
+      options->remote_override = p[1];
+    }
   else if (streq (p[0], "remote") && p[1])
     {
       struct remote_entry re;
@@ -4502,7 +4507,7 @@ add_option (struct options *options,
       re.af=0;
 
       VERIFY_PERMISSION (OPT_P_GENERAL|OPT_P_CONNECTION);
-      re.remote = p[1];
+      re.remote = options->remote_override ? options->remote_override : p[1];
       if (p[2])
 	{
 	  re.remote_port = p[2];
