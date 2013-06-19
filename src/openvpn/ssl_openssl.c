@@ -200,10 +200,8 @@ tls_ctx_set_options (struct tls_root_ctx *ctx, unsigned int ssl_flags)
   {
     long sslopt = SSL_OP_SINGLE_DH_USE | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3;
     const int tls_version_min = (ssl_flags >> SSLF_TLS_VERSION_SHIFT) & SSLF_TLS_VERSION_MASK;
-#ifdef SSL_OP_NO_TLSv1
     if (tls_version_min > TLS_VER_1_0)
       sslopt |= SSL_OP_NO_TLSv1;
-#endif
 #ifdef SSL_OP_NO_TLSv1_1
     if (tls_version_min > TLS_VER_1_1)
       sslopt |= SSL_OP_NO_TLSv1_1;

@@ -569,13 +569,11 @@ void key_state_ssl_init(struct key_state_ssl *ks_ssl,
 	int polar_minor;
 	switch (tls_version_min)
 	  {
-#if defined(SSL_MAJOR_VERSION_3) && defined(SSL_MINOR_VERSION_1)
 	  case TLS_VER_1_0:
 	  default:
 	    polar_major = SSL_MAJOR_VERSION_3;
 	    polar_minor = SSL_MINOR_VERSION_1;
 	    break;
-#endif
 #if defined(SSL_MAJOR_VERSION_3) && defined(SSL_MINOR_VERSION_2)
 	  case TLS_VER_1_1:
 	    polar_major = SSL_MAJOR_VERSION_3;
