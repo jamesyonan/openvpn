@@ -7,10 +7,7 @@
  *
  *  Copyright (C) 2002-2010 OpenVPN Technologies, Inc. <sales@openvpn.net>
  *  Copyright (C) 2010 Fox Crypto B.V. <openvpn@fox-it.com>
- *
- *  Additions for eurephia plugin done by:
- *         David Sommerseth <dazo@users.sourceforge.net> Copyright (C) 2008-2009
- *
+ *  Copyright (C) 2008-2013 David Sommerseth <dazo@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -1755,7 +1752,6 @@ key_method_1_write (struct buffer *buf, struct tls_session *session)
 {
   struct key key;
   struct key_state *ks = &session->key[KS_PRIMARY]; 	   /* primary key */
-  struct key_state *ks_lame = &session->key[KS_LAME_DUCK]; /* retiring key */
 
   ASSERT (session->opt->key_method == 1);
   ASSERT (buf_init (buf, 0));
@@ -1870,7 +1866,6 @@ static bool
 key_method_2_write (struct buffer *buf, struct tls_session *session)
 {
   struct key_state *ks = &session->key[KS_PRIMARY]; 	   /* primary key */
-  struct key_state *ks_lame = &session->key[KS_LAME_DUCK]; /* retiring key */
 
   ASSERT (session->opt->key_method == 2);
   ASSERT (buf_init (buf, 0));
@@ -1954,7 +1949,6 @@ key_method_1_read (struct buffer *buf, struct tls_session *session)
   int status;
   struct key key;
   struct key_state *ks = &session->key[KS_PRIMARY]; 	   /* primary key */
-  struct key_state *ks_lame = &session->key[KS_LAME_DUCK]; /* retiring key */
 
   ASSERT (session->opt->key_method == 1);
 
@@ -2013,7 +2007,6 @@ static bool
 key_method_2_read (struct buffer *buf, struct tls_multi *multi, struct tls_session *session)
 {
   struct key_state *ks = &session->key[KS_PRIMARY]; 	   /* primary key */
-  struct key_state *ks_lame = &session->key[KS_LAME_DUCK]; /* retiring key */
 
   int key_method_flags;
   bool username_status, password_status;

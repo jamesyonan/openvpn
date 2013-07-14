@@ -425,7 +425,6 @@ verify_cert_set_env(struct env_set *es, openvpn_x509_cert_t *peer_cert, int cert
   setenv_str (es, envname, common_name);
 #endif
 
-#ifdef ENABLE_EUREPHIA
   /* export X509 cert SHA1 fingerprint */
   {
     unsigned char *sha1_hash = x509_get_sha1_hash(peer_cert, &gc);
@@ -434,7 +433,6 @@ verify_cert_set_env(struct env_set *es, openvpn_x509_cert_t *peer_cert, int cert
     setenv_str (es, envname, format_hex_ex(sha1_hash, SHA_DIGEST_LENGTH, 0, 1,
 					  ":", &gc));
   }
-#endif
 
   /* export serial number as environmental variable */
   serial = x509_get_serial(peer_cert, &gc);
@@ -1027,7 +1025,9 @@ static int
 verify_user_pass_plugin (struct tls_session *session, const struct user_pass *up, const char *raw_username)
 {
   int retval = OPENVPN_PLUGIN_FUNC_ERROR;
+#ifdef PLUGIN_DEF_AUTH
   struct key_state *ks = &session->key[KS_PRIMARY]; 	   /* primary key */
+#endif
 
   /* Is username defined? */
   if ((session->opt->ssl_flags & SSLF_AUTH_USER_PASS_OPTIONAL) || strlen (up->username))
