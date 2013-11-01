@@ -114,7 +114,11 @@ tls_ctx_server_new(struct tls_root_ctx *ctx)
 {
   ASSERT(NULL != ctx);
 
+#ifdef FORCE_TLS_1_0
+  ctx->ctx = SSL_CTX_new (TLSv1_server_method ());
+#else
   ctx->ctx = SSL_CTX_new (SSLv23_server_method ());
+#endif
 
   if (ctx->ctx == NULL)
     msg (M_SSLERR, "SSL_CTX_new TLSv1_server_method");
@@ -127,7 +131,11 @@ tls_ctx_client_new(struct tls_root_ctx *ctx)
 {
   ASSERT(NULL != ctx);
 
+#ifdef FORCE_TLS_1_0
+  ctx->ctx = SSL_CTX_new (TLSv1_client_method ());
+#else
   ctx->ctx = SSL_CTX_new (SSLv23_client_method ());
+#endif
 
   if (ctx->ctx == NULL)
     msg (M_SSLERR, "SSL_CTX_new TLSv1_client_method");

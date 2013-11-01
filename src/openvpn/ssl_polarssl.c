@@ -562,6 +562,10 @@ void key_state_ssl_init(struct key_state_ssl *ks_ssl,
       /* TODO: PolarSSL does not currently support sending the CA chain to the client */
       ssl_set_ca_chain (ks_ssl->ctx, ssl_ctx->ca_chain, NULL, NULL );
 
+#ifdef FORCE_TLS_1_0
+      ssl_set_min_version(ks_ssl->ctx, SSL_MAJOR_VERSION_3, SSL_MINOR_VERSION_1);
+      ssl_set_max_version(ks_ssl->ctx, SSL_MAJOR_VERSION_3, SSL_MINOR_VERSION_1);
+#else
       /* Initialize minimum TLS version */
       {
 	const int tls_version_min = (session->opt->ssl_flags >> SSLF_TLS_VERSION_SHIFT) & SSLF_TLS_VERSION_MASK;
@@ -589,6 +593,7 @@ void key_state_ssl_init(struct key_state_ssl *ks_ssl,
 	  }
 	ssl_set_min_version(ks_ssl->ctx, polar_major, polar_minor);
       }
+#endif
 
       /* Initialise BIOs */
       ALLOC_OBJ_CLEAR (ks_ssl->ct_in, endless_buffer);

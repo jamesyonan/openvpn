@@ -185,6 +185,13 @@ AC_ARG_ENABLE(
 )
 
 AC_ARG_ENABLE(
+	[force-tls-1-0],
+	[AS_HELP_STRING([--enable-force-tls-1-0], [force TLS 1.0 @<:@default=no@:>@])],
+	,
+	[enable_force_tls_1_0="no"]
+)
+
+AC_ARG_ENABLE(
 	[pf],
 	[AS_HELP_STRING([--disable-pf], [disable internal packet filter @<:@default=yes@:>@])],
 	,
@@ -1026,6 +1033,10 @@ else
 		test -z "${ROUTE}" && AC_MSG_ERROR([route utility is required but missing])
 		test -z "${IFCONFIG}" && AC_MSG_ERROR([ifconfig utility is required but missing])
 	fi
+fi
+
+if test "${enable_force_tls_1_0}" = "yes"; then
+	AC_DEFINE([FORCE_TLS_1_0], [1], [force TLS 1.0])
 fi
 
 if test "${enable_selinux}" = "yes"; then
