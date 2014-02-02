@@ -68,7 +68,7 @@ tls_clear_error()
 }
 
 void
-tls_ctx_server_new(struct tls_root_ctx *ctx)
+tls_ctx_server_new(struct tls_root_ctx *ctx, unsigned int ssl_flags)
 {
   ASSERT(NULL != ctx);
   CLEAR(*ctx);
@@ -85,7 +85,7 @@ tls_ctx_server_new(struct tls_root_ctx *ctx)
 }
 
 void
-tls_ctx_client_new(struct tls_root_ctx *ctx)
+tls_ctx_client_new(struct tls_root_ctx *ctx, unsigned int ssl_flags)
 {
   ASSERT(NULL != ctx);
   CLEAR(*ctx);
@@ -715,29 +715,32 @@ void key_state_ssl_init(struct key_state_ssl *ks_ssl,
       /* Initialize minimum TLS version */
       {
 	const int tls_version_min = (session->opt->ssl_flags >> SSLF_TLS_VERSION_SHIFT) & SSLF_TLS_VERSION_MASK;
-	int polar_major;
-	int polar_minor;
-	switch (tls_version_min)
+	if (tls_version_min > TLS_VER_UNSPEC)
 	  {
-	  case TLS_VER_1_0:
-	  default:
-	    polar_major = SSL_MAJOR_VERSION_3;
-	    polar_minor = SSL_MINOR_VERSION_1;
-	    break;
+	    int polar_major;
+	    int polar_minor;
+	    switch (tls_version_min)
+	      {
+	      case TLS_VER_1_0:
+	      default:
+		polar_major = SSL_MAJOR_VERSION_3;
+		polar_minor = SSL_MINOR_VERSION_1;
+		break;
 #if defined(SSL_MAJOR_VERSION_3) && defined(SSL_MINOR_VERSION_2)
-	  case TLS_VER_1_1:
-	    polar_major = SSL_MAJOR_VERSION_3;
-	    polar_minor = SSL_MINOR_VERSION_2;
-	    break;
+	      case TLS_VER_1_1:
+		polar_major = SSL_MAJOR_VERSION_3;
+		polar_minor = SSL_MINOR_VERSION_2;
+		break;
 #endif
 #if defined(SSL_MAJOR_VERSION_3) && defined(SSL_MINOR_VERSION_3)
-	  case TLS_VER_1_2:
-	    polar_major = SSL_MAJOR_VERSION_3;
-	    polar_minor = SSL_MINOR_VERSION_3;
-	    break;
+	      case TLS_VER_1_2:
+		polar_major = SSL_MAJOR_VERSION_3;
+		polar_minor = SSL_MINOR_VERSION_3;
+		break;
 #endif
+	      }
+	    ssl_set_min_version(ks_ssl->ctx, polar_major, polar_minor);
 	  }
-	ssl_set_min_version(ks_ssl->ctx, polar_major, polar_minor);
       }
 
       /* Initialise BIOs */
