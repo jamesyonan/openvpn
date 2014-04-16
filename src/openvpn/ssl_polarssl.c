@@ -1045,7 +1045,7 @@ show_available_tls_ciphers (const char *cipher_list)
   struct tls_root_ctx tls_ctx;
   const int *ciphers = ssl_list_ciphersuites();
 
-  tls_ctx_server_new(&tls_ctx);
+  tls_ctx_server_new(&tls_ctx, 0);
   tls_ctx_restrict_ciphers(&tls_ctx, cipher_list);
 
   if (tls_ctx.allowed_ciphers)
