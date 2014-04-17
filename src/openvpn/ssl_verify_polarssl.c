@@ -161,11 +161,12 @@ char *
 backend_x509_get_serial_hex (openvpn_x509_cert_t *cert, struct gc_arena *gc)
 {
   char *buf = NULL;
-  size_t len = cert->serial.len * 3 + 1;
+  size_t len = cert->serial.len * 3;
 
-  buf = gc_malloc(len, true, gc);
+  buf = gc_malloc(len+1, true, gc);
 
-  if(x509_serial_gets(buf, len-1, &cert->serial) < 0)
+  buf[0] = 'x';
+  if(x509_serial_gets(buf+1, len, &cert->serial) < 0)
     buf = NULL;
 
   return buf;
