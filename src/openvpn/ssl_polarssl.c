@@ -349,6 +349,25 @@ tls_ctx_use_external_private_key (struct tls_root_ctx *ctx,
   return 1;
 }
 
+/**
+ * external_pkcs1_sign implements a PolarSSL rsa_sign_func callback, that uses
+ * the management interface to request an RSA signature for the supplied hash.
+ *
+ * @param ctx_voidptr   Management external key context.
+ * @param f_rng         (Unused)
+ * @param p_rng         (Unused)
+ * @param mode          RSA mode (should be RSA_PRIVATE).
+ * @param md_alg        Message digest ('hash') algorithm type.
+ * @param hashlen       Length of hash (overridden by length specified by md_alg
+ *                      if md_alg != POLARSSL_MD_NONE).
+ * @param hash          The digest ('hash') to sign. Should have a size
+ *                      matching the length of md_alg (if != POLARSSL_MD_NONE),
+ *                      or hashlen otherwise.
+ * @param sig           Buffer that returns the signature. Should be at least of
+ *                      size ctx->signature_length.
+ *
+ * @return 0 on success, non-zero polarssl error code on failure.
+ */
 static inline int external_pkcs1_sign( void *ctx_voidptr,
     int (*f_rng)(void *, unsigned char *, size_t), void *p_rng, int mode,
     md_type_t md_alg, unsigned int hashlen, const unsigned char *hash,
@@ -388,7 +407,7 @@ static inline int external_pkcs1_sign( void *ctx_voidptr,
     }
 
   sig_len = ctx->signature_length;
-  if ( (SIZE_MAX - hashlen) > asn_len || (hashlen + asn_len) > sig_len )
+  if ( (SIZE_MAX - hashlen) < asn_len || (hashlen + asn_len) > sig_len )
     return POLARSSL_ERR_RSA_BAD_INPUT_DATA;
 
   if( md_alg != POLARSSL_MD_NONE )
@@ -417,9 +436,10 @@ static inline int external_pkcs1_sign( void *ctx_voidptr,
 
       /* Determine added ASN length */
       asn_len = p - sig;
-
-      memcpy( p, hash, hashlen );
   }
+
+  /* Copy the hash to be signed */
+  memcpy( p, hash, hashlen );
 
   /* convert 'from' to base64 */
   if (openvpn_base64_encode (sig, asn_len + hashlen, &in_b64) <= 0)
