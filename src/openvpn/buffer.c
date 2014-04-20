@@ -399,22 +399,25 @@ gc_transfer (struct gc_arena *dest, struct gc_arena *src)
 
 char *
 format_hex_ex (const uint8_t *data, int size, int maxoutput,
-	       int space_break, const char* separator,
+	       unsigned int space_break_flags, const char* separator,
 	       struct gc_arena *gc)
 {
   const size_t separator_len = separator ? strlen (separator) : 0;
   static_assert (INT_MAX <= SIZE_MAX, "Code assumes INT_MAX <= SIZE_MAX");
   const size_t out_len = maxoutput > 0 ? maxoutput :
-	    ((size * 2) + ((size / space_break) * separator_len) + 2);
+	    ((size * 2) + ((size / (space_break_flags & FHE_SPACE_BREAK_MASK)) * separator_len) + 2);
 
   struct buffer out = alloc_buf_gc (out_len, gc);
 
   int i;
   for (i = 0; i < size; ++i)
     {
-      if (separator && i && !(i % space_break))
+      if (separator && i && !(i % (space_break_flags & FHE_SPACE_BREAK_MASK)))
 	buf_printf (&out, "%s", separator);
-      buf_printf (&out, "%02x", data[i]);
+      if (space_break_flags & FHE_CAPS)
+	buf_printf (&out, "%02X", data[i]);
+      else
+	buf_printf (&out, "%02x", data[i]);
     }
   buf_catrunc (&out, "[more...]");
   return (char *)out.data;
