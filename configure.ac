@@ -103,6 +103,13 @@ AC_ARG_ENABLE(
 )
 
 AC_ARG_ENABLE(
+	[scripts],
+	[AS_HELP_STRING([--disable-scripts], [disable user-defined scripting support @<:@default=yes@:>@])],
+	,
+	[enable_scripts="yes"]
+)
+
+AC_ARG_ENABLE(
 	[pkcs11],
 	[AS_HELP_STRING([--enable-pkcs11], [enable pkcs11 support @<:@default=no@:>@])],
 	,
@@ -919,6 +926,7 @@ test "${ac_cv_header_sys_uio_h}" = "yes" && AC_DEFINE([HAVE_IOVEC], [1], [struct
 test "${enable_multi}" = "yes" && AC_DEFINE([ENABLE_CLIENT_SERVER], [1], [Enable client/server capability])
 test "${enable_server}" = "no" && AC_DEFINE([ENABLE_CLIENT_ONLY], [1], [Enable client capability only])
 test "${enable_management}" = "yes" && AC_DEFINE([ENABLE_MANAGEMENT], [1], [Enable management server capability])
+test "${enable_scripts}" = "yes" && AC_DEFINE([ENABLE_SCRIPTS], [1], [Enable user-defined scripting])
 test "${enable_socks}" = "yes" && AC_DEFINE([ENABLE_SOCKS], [1], [Enable Socks proxy support])
 test "${enable_http_proxy}" = "yes" && AC_DEFINE([ENABLE_HTTP_PROXY], [1], [Enable HTTP proxy support])
 test "${enable_multihome}" = "yes" && AC_DEFINE([ENABLE_MULTIHOME], [1], [Enable multi-homed UDP server capability])
