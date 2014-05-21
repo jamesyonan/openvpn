@@ -99,6 +99,9 @@ const char title_string[] =
 #if ENABLE_IP_PKTINFO
   " [MH]"
 #endif
+#ifndef ENABLE_SCRIPTS
+  " [NOSCRIPTS]"
+#endif
   " [IPv6]"
   " built on " __DATE__
 ;
@@ -5476,7 +5479,11 @@ add_option (struct options *options,
   else if (streq (p[0], "script-security") && p[1] && !p[2])
     {
       VERIFY_PERMISSION (OPT_P_GENERAL);
+#ifdef ENABLE_SCRIPTS
       script_security = atoi (p[1]);
+#else
+      msg (M_WARN, "NOTE: script-security directive ignored due to build setting");
+#endif
     }
   else if (streq (p[0], "mssfix") && !p[2])
     {
