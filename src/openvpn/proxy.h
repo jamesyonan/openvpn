@@ -53,6 +53,7 @@ struct http_proxy_options {
   const char *auth_file;
   const char *http_version;
   const char *user_agent;
+  bool inline_creds;
 };
 
 struct http_proxy_options_simple {

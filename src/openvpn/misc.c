@@ -1154,43 +1154,54 @@ get_user_pass_cr (struct user_pass *up,
 	}
       else
 	{
-	  /*
-	   * Get username/password from a file.
-	   */
-	  FILE *fp;
-      
-#ifndef ENABLE_PASSWORD_SAVE
-	  /*
-	   * Unless ENABLE_PASSWORD_SAVE is defined, don't allow sensitive passwords
-	   * to be read from a file.
-	   */
-	  if (flags & GET_USER_PASS_SENSITIVE)
-	    msg (M_FATAL, "Sorry, '%s' password cannot be read from a file", prefix);
-#endif
-
-	  warn_if_group_others_accessible (auth_file);
-
-	  fp = platform_fopen (auth_file, "r");
-	  if (!fp)
-	    msg (M_ERR, "Error opening '%s' auth file: %s", prefix, auth_file);
-
-	  if (flags & GET_USER_PASS_PASSWORD_ONLY)
+	  if (flags & GET_USER_PASS_INLINE_CREDS)
 	    {
-	      if (fgets (up->password, USER_PASS_LEN, fp) == NULL)
-		msg (M_FATAL, "Error reading password from %s authfile: %s",
-		     prefix,
-		     auth_file);
+	      struct buffer buf;
+	      buf_set_read (&buf, (uint8_t*) auth_file, strlen (auth_file) + 1);
+	      if (!(flags & GET_USER_PASS_PASSWORD_ONLY))
+		buf_parse (&buf, '\n', up->username, USER_PASS_LEN);
+	      buf_parse (&buf, '\n', up->password, USER_PASS_LEN);
 	    }
 	  else
 	    {
-	      if (fgets (up->username, USER_PASS_LEN, fp) == NULL
-		  || fgets (up->password, USER_PASS_LEN, fp) == NULL)
-		msg (M_FATAL, "Error reading username and password (must be on two consecutive lines) from %s authfile: %s",
-		     prefix,
-		     auth_file);
-	    }
+	      /*
+	       * Get username/password from a file.
+	       */
+	      FILE *fp;
       
-	  fclose (fp);
+#ifndef ENABLE_PASSWORD_SAVE
+	      /*
+	       * Unless ENABLE_PASSWORD_SAVE is defined, don't allow sensitive passwords
+	       * to be read from a file.
+	       */
+	      if (flags & GET_USER_PASS_SENSITIVE)
+		msg (M_FATAL, "Sorry, '%s' password cannot be read from a file", prefix);
+#endif
+
+	      warn_if_group_others_accessible (auth_file);
+
+	      fp = platform_fopen (auth_file, "r");
+	      if (!fp)
+		msg (M_ERR, "Error opening '%s' auth file: %s", prefix, auth_file);
+
+	      if (flags & GET_USER_PASS_PASSWORD_ONLY)
+		{
+		  if (fgets (up->password, USER_PASS_LEN, fp) == NULL)
+		    msg (M_FATAL, "Error reading password from %s authfile: %s",
+			 prefix,
+			 auth_file);
+		}
+	      else
+		{
+		  if (fgets (up->username, USER_PASS_LEN, fp) == NULL
+		      || fgets (up->password, USER_PASS_LEN, fp) == NULL)
+		    msg (M_FATAL, "Error reading username and password (must be on two consecutive lines) from %s authfile: %s",
+			 prefix,
+			 auth_file);
+		}
+      
+	      fclose (fp);
+	    }
       
 	  chomp (up->username);
 	  chomp (up->password);
