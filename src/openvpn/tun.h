@@ -363,15 +363,24 @@ int tun_finalize (HANDLE h, struct overlapped_io *io, struct buffer *buf);
 static inline bool
 tuntap_stop (int status)
 {
-  /*
-   * This corresponds to the STATUS_NO_SUCH_DEVICE
-   * error in tapdrvr.c.
-   */
-  if (status < 0)
-    {
-      return openvpn_errno () == ERROR_FILE_NOT_FOUND;
-    }
-  return false;
+   /*
+    * This corresponds to the STATUS_NO_SUCH_DEVICE
+    * error in tapdrvr.c.
+    */
+   if (status < 0)
+   {
+      status = openvpn_errno();
+      switch (status)
+      {
+      case ERROR_FILE_NOT_FOUND:
+      case ERROR_OPERATION_ABORTED:
+         return true;
+
+      default:
+         return false;
+      }
+   }
+   return false;
 }
 
 static inline int
