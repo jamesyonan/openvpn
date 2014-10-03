@@ -361,27 +361,33 @@ int tun_write_queue (struct tuntap *tt, struct buffer *buf);
 int tun_finalize (HANDLE h, struct overlapped_io *io, struct buffer *buf);
 
 static inline bool
-tuntap_stop (int status)
+tuntap_stop(int status)
 {
    /*
-    * This corresponds to the STATUS_NO_SUCH_DEVICE
-    * error in tapdrvr.c.
-    */
+   * This corresponds to the STATUS_NO_SUCH_DEVICE
+   * error in tapdrvr.c.
+   */
    if (status < 0)
    {
-      status = openvpn_errno();
-      switch (status)
-      {
-      case ERROR_FILE_NOT_FOUND:
-      case ERROR_OPERATION_ABORTED:
-         return true;
-
-      default:
-         return false;
-      }
+      return openvpn_errno() == ERROR_FILE_NOT_FOUND;
    }
    return false;
 }
+
+static inline bool
+tuntap_abort(int status)
+{
+   /*
+   * Typically generated when driver is halted.
+   */
+   if (status < 0)
+   {
+      return openvpn_errno() == ERROR_OPERATION_ABORTED;
+   }
+   return false;
+}
+
+
 
 static inline int
 tun_write_win32 (struct tuntap *tt, struct buffer *buf)
