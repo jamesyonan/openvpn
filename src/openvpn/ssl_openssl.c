@@ -232,6 +232,11 @@ tls_ctx_set_options (struct tls_root_ctx *ctx, unsigned int ssl_flags)
     SSL_CTX_set_options (ctx->ctx, sslopt);
   }
 
+  /* JY -- enable ECDHE ciphersuites */
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+  SSL_CTX_set_ecdh_auto(ctx->ctx, 1);
+#endif
+
   SSL_CTX_set_session_cache_mode (ctx->ctx, SSL_SESS_CACHE_OFF);
   SSL_CTX_set_default_passwd_cb (ctx->ctx, pem_password_callback);
 
