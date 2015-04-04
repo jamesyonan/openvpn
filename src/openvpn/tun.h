@@ -430,6 +430,12 @@ tuntap_stop (int status)
   return false;
 }
 
+static inline bool
+tuntap_abort(int status)
+{
+  return false;
+}
+
 static inline void
 tun_standby_init (struct tuntap *tt)
 {
