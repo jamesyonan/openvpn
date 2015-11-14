@@ -462,6 +462,7 @@ struct options
   char *port_share_host;
   char *port_share_port;
   const char *port_share_journal_dir;
+  int port_share_max_concurrent_connections;
 #endif
 #endif
 

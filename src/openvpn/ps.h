@@ -46,7 +46,8 @@ extern struct port_share *port_share;
 struct port_share *port_share_open (const char *host,
 				    const char *port,
 				    const int max_initial_buf,
-				    const char *journal_dir);
+				    const char *journal_dir,
+				    const int max_concurrent_connections);
 
 void port_share_close (struct port_share *ps);
 void port_share_abort (struct port_share *ps);
