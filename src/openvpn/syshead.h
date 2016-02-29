@@ -634,7 +634,7 @@ socket_defined (const socket_descriptor_t sd)
 /*
  * Enable x509-track feature?
  */
-#if defined(ENABLE_CRYPTO) && defined (ENABLE_CRYPTO_OPENSSL)
+#if defined(ENABLE_CRYPTO) && (defined(ENABLE_CRYPTO_OPENSSL) || defined(ENABLE_CRYPTO_POLARSSL))
 #define ENABLE_X509_TRACK
 #endif
 
