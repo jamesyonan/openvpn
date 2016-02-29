@@ -78,6 +78,15 @@ struct proxy_connection {
   char *jfn;
 };
 
+/*
+ * Keep track of concurrent connections, and enforce
+ * a maximum limit.
+ */
+struct proxy_limits {
+  int half_connections;
+  int max_half_connections;
+};
+
 #if 0
 static const char *
 headc (const struct buffer *buf)
@@ -285,9 +294,10 @@ proxy_entry_mark_for_close (struct proxy_connection *pc, struct event_set *es)
  * Run through the proxy entry list and delete all entries marked
  * for close.
  */
-static void
+static int
 proxy_list_housekeeping (struct proxy_connection **list)
 {
+  int count = 0;
   if (list)
     {
       struct proxy_connection *prev = NULL;
@@ -305,10 +315,14 @@ proxy_list_housekeeping (struct proxy_connection **list)
 		*list = next;
 	    }
 	  else
-	    prev = pc;
+	    {
+	      ++count;
+	      prev = pc;
+	    }
 	  pc = next;
 	}
     }
+  return count;
 }
 
 /*
@@ -396,12 +410,22 @@ proxy_entry_new (struct proxy_connection **list,
 		 const struct sockaddr_in server_addr,
 		 const socket_descriptor_t sd_client,
 		 struct buffer *initial_data,
-		 const char *journal_dir)
+		 const char *journal_dir,
+		 struct proxy_limits *limits)
 {
   socket_descriptor_t sd_server;
   int status;
   struct proxy_connection *pc;
   struct proxy_connection *cp;
+
+  /* check concurrent connections limit */
+  if (limits->half_connections >= limits->max_half_connections)
+    {
+      msg (M_WARN, "PORT SHARE PROXY: concurrent connections limit (%d/%d) has been reached",
+	   limits->half_connections / 2,
+	   limits->max_half_connections / 2);
+      return false;
+    }
 
   /* connect to port share server */
   if ((sd_server = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
@@ -455,7 +479,9 @@ proxy_entry_new (struct proxy_connection **list,
   /* set initial i/o states */
   proxy_connection_io_requeue (pc, EVENT_READ, es);
   proxy_connection_io_requeue (cp, EVENT_READ|EVENT_WRITE, es);
-  
+
+  ++limits->half_connections;
+
   return true;
 }
 
@@ -471,7 +497,8 @@ control_message_from_parent (const socket_descriptor_t sd_control,
 			     struct event_set *es,
 			     const struct sockaddr_in server_addr,
 			     const int max_initial_buf,
-			     const char *journal_dir)
+			     const char *journal_dir,
+			     struct proxy_limits *limits)
 {
   /* this buffer needs to be large enough to handle the largest buffer
      that might be returned by the link_socket_read call in read_incoming_link. */
@@ -527,7 +554,8 @@ control_message_from_parent (const socket_descriptor_t sd_control,
 				   server_addr,
 				   received_fd,
 				   &buf,
-				   journal_dir))
+				   journal_dir,
+				   limits))
 		{
 		  CLEAR (buf); /* we gave the buffer to proxy_entry_new */
 		}
@@ -704,7 +732,8 @@ static void
 port_share_proxy (const struct sockaddr_in hostaddr,
 		  const socket_descriptor_t sd_control,
 		  const int max_initial_buf,
-		  const char *journal_dir)
+		  const char *journal_dir,
+		  struct proxy_limits *limits)
 {
   if (send_control (sd_control, RESPONSE_INIT_SUCCEEDED) >= 0)
     {
@@ -738,7 +767,7 @@ port_share_proxy (const struct sockaddr_in hostaddr,
 		  const struct event_set_return *e = &esr[i];
 		  if (e->arg == sd_control_marker)
 		    {
-		      if (!control_message_from_parent (sd_control, &list, es, hostaddr, max_initial_buf, journal_dir))
+		      if (!control_message_from_parent (sd_control, &list, es, hostaddr, max_initial_buf, journal_dir, limits))
 			goto done;
 		    }
 		  else
@@ -755,7 +784,7 @@ port_share_proxy (const struct sockaddr_in hostaddr,
 	    }
 	  if (current > last_housekeeping)
 	    {
-	      proxy_list_housekeeping (&list);
+	      limits->half_connections = proxy_list_housekeeping (&list);
 	      last_housekeeping = current;
 	    }
 	}
@@ -775,7 +804,8 @@ struct port_share *
 port_share_open (const char *host,
 		 const char *port,
 		 const int max_initial_buf,
-		 const char *journal_dir)
+		 const char *journal_dir,
+		 const int max_concurrent_connections)
 {
   pid_t pid;
   socket_descriptor_t fd[2];
@@ -783,6 +813,11 @@ port_share_open (const char *host,
   struct port_share *ps;
   int status;
   struct addrinfo* ai;
+  struct proxy_limits limits;
+
+  /* concurrent connection limits */
+  limits.half_connections = 0;
+  limits.max_half_connections = max_concurrent_connections * 2;
 
   ALLOC_OBJ_CLEAR (ps, struct port_share);
   ps->foreground_fd = -1;
@@ -872,7 +907,7 @@ port_share_open (const char *host,
       prng_init (NULL, 0);
 
       /* execute the event loop */
-      port_share_proxy (hostaddr, fd[1], max_initial_buf, journal_dir);
+      port_share_proxy (hostaddr, fd[1], max_initial_buf, journal_dir, &limits);
 
       openvpn_close_socket (fd[1]);
 

@@ -557,7 +557,8 @@ init_port_share (struct context *c)
       port_share = port_share_open (c->options.port_share_host,
 				    c->options.port_share_port,
 				    MAX_RW_SIZE_LINK (&c->c2.frame),
-				    c->options.port_share_journal_dir);
+				    c->options.port_share_journal_dir,
+				    c->options.port_share_max_concurrent_connections);
       if (port_share == NULL)
 	msg (M_FATAL, "Fatal error: Port sharing failed");
     }

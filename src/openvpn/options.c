@@ -480,6 +480,7 @@ static const char usage_message[] =
   "--port-share host port [dir] : When run in TCP mode, proxy incoming HTTPS\n"
   "                  sessions to a web server at host:port.  dir specifies an\n"
   "                  optional directory to write origin IP:port data.\n"
+  "--port-share-max N : Max number of port-share concurrent connections\n"
 #endif
 #endif
   "\n"
@@ -871,6 +872,9 @@ init_options (struct options *o, const bool init_gc)
   }
 #endif /* WIN32 */
 #endif /* P2MP_SERVER */
+#if PORT_SHARE
+  o->port_share_max_concurrent_connections = 512;
+#endif
 }
 
 void
@@ -5861,6 +5865,11 @@ add_option (struct options *options,
       options->port_share_host = p[1];
       options->port_share_port = p[2];
       options->port_share_journal_dir = p[3];
+    }
+  else if (streq (p[0], "port-share-max") && p[1])
+    {
+      VERIFY_PERMISSION (OPT_P_GENERAL);
+      options->port_share_max_concurrent_connections = atoi (p[1]);
     }
 #endif
   else if (streq (p[0], "client-to-client") && !p[1])
