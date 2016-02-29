@@ -118,6 +118,7 @@ static const char usage_message[] =
   "--remote host [port] : Remote host name or ip address.\n"
   "--remote-random : If multiple --remote options specified, choose one randomly.\n"
   "--remote-random-hostname : Add a random string to remote DNS name.\n"
+  "--remote-override a : Replace the hostname in all remote directives with a.\n"
   "--mode m        : Major mode, m = 'p2p' (default, point-to-point) or 'server'.\n"
   "--proto p       : Use protocol p for communicating with peer.\n"
   "                  p = udp (default), tcp-server, or tcp-client\n"
@@ -4565,6 +4566,11 @@ add_option (struct options *options,
 	goto err;
     }
 #endif
+  else if (streq (p[0], "remote-override") && p[1])
+    {
+      VERIFY_PERMISSION (OPT_P_GENERAL);
+      options->remote_override = p[1];
+    }
   else if (streq (p[0], "remote") && p[1] && !p[4])
     {
       struct remote_entry re;
@@ -4573,7 +4579,7 @@ add_option (struct options *options,
       re.af=0;
 
       VERIFY_PERMISSION (OPT_P_GENERAL|OPT_P_CONNECTION);
-      re.remote = p[1];
+      re.remote = options->remote_override ? options->remote_override : p[1];
       if (p[2])
 	{
 	  re.remote_port = p[2];
