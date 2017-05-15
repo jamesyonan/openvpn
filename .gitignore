@@ -63,3 +63,5 @@ tests/unit_tests/**/*_testdriver
 
 src/openvpn/openvpn
 config-version.h
+
+compile
