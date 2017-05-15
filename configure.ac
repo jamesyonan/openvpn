@@ -799,9 +799,9 @@ have_polarssl_ssl="yes"
 have_polarssl_crypto="yes"
 if test -z "${POLARSSL_LIBS}"; then
 	AC_CHECK_LIB(
-		[polarssl],
+		[mbedtls],
 		[ssl_init],
-		[POLARSSL_LIBS="-lpolarssl"],
+		[POLARSSL_LIBS="-lmbedtls"],
 		[
 			have_polarssl_ssl="no"
 			AC_CHECK_LIB(
